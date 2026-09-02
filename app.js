@@ -154,16 +154,6 @@ function showResult(file, report) {
   const count = Object.keys(store.manifests || {}).length;
   manifestEl.appendChild(renderManifest(store.activeManifest, count > 1 ? `Active manifest (of ${count} in the file)` : 'Manifest'));
 
-  // Removal lives on its own subdomain to keep this page purely about verification.
-  if (/jpe?g|png|webp|gif|wav|mpeg|mp3/.test((file.type + ' ' + file.name).toLowerCase())) {
-    const p = elc('p', 'remove-note');
-    p.append('Want these credentials removed from your own file? ');
-    const a = document.createElement('a');
-    a.href = 'https://remove.c2paview.com/';
-    a.textContent = 'remove.c2paview.com';
-    p.append(a, ' strips them losslessly, on your device (beta).');
-    manifestEl.appendChild(p);
-  }
 
   try {
     $('#raw').textContent = JSON.stringify(store, (k, v) => (k === 'parent' || k === 'node' ? undefined : v), 2);
