@@ -2,6 +2,8 @@
 
 > Drop any image, video or audio file and inspect its C2PA Content Credentials: who signed it, when, with what tool, whether it is AI-generated, and whether it has been altered since signing. Validation runs entirely in the browser via the official C2PA reference implementation (c2pa-js/WebAssembly) - the file is never uploaded. Free, no accounts, no cookies, no analytics.
 
+Files produced by AI assistants often carry Content Credentials: Anthropic's Claude adds C2PA to some file types it creates or modifies, and DALL-E and Adobe Firefly sign their images - this tool shows exactly what such a file declares. To add credentials to your own files, see https://zerofake.app/ or the open-source c2patool.
+
 Supported: JPEG, PNG, WebP, AVIF, GIF, TIFF, SVG, MP4, MOV, MP3, WAV, PDF and .c2pa sidecar files.
 
 What results mean: green = credentials present, hashes and signature verify, unaltered since signing (identity of the signer should still be judged from the issuer name); red = altered after signing, with the C2PA validation codes explained in plain language; grey = no Content Credentials present (the normal case for most files).

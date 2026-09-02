@@ -189,4 +189,30 @@ $('#sample').addEventListener('click', async () => {
   inspect(new File([blob], 'sample-signed.jpg', { type: 'image/jpeg' }));
 });
 
+// ------------------------------------------------------------------ PWA
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+// Installed app opened via "Open with" (file_handlers): inspect the handed file directly.
+if ('launchQueue' in window) {
+  window.launchQueue.setConsumer(async (params) => {
+    if (params.files && params.files.length) inspect(await params.files[0].getFile());
+  });
+}
+// Android share sheet: the service worker parked the shared file in a one-shot cache.
+if (new URLSearchParams(location.search).get('shared')) {
+  (async () => {
+    try {
+      const c = await caches.open('share-inbox');
+      const res = await c.match('/shared-file');
+      if (!res) return;
+      await c.delete('/shared-file');
+      const name = decodeURIComponent(res.headers.get('X-File-Name') || 'shared-file');
+      const blob = await res.blob();
+      inspect(new File([blob], name, { type: blob.type }));
+      history.replaceState(null, '', '/');
+    } catch (e) { /* ignore */ }
+  })();
+}
+
 window.__C2PA = { inspect, ready: c2paReady };

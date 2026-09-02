@@ -4,11 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>C2PA View - inspect Content Credentials in your browser</title>
-  <meta name="description" content="Drop any image, video or audio file and see its C2PA Content Credentials: who signed it, when, with what tool, whether it is AI-generated, and whether it has been altered since. Validates entirely in your browser - the file never leaves your machine." />
+  <meta name="description" content="Drop any image, video or audio file and see its C2PA Content Credentials: who signed it, when, with what tool, and whether it has been altered since. Reads the provenance added by cameras, Photoshop, and generative AI like Claude, DALL·E and Firefly. Validates entirely in your browser - the file never leaves your machine." />
   <link rel="canonical" href="https://c2paview.com/" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0d1117" />
 
   <meta property="og:type"        content="website" />
   <meta property="og:url"         content="https://c2paview.com/" />
@@ -94,6 +96,22 @@
         "@type": "Answer",
         "text": "They can be removed - they are metadata, and the C2PA standard itself anticipates redaction - but they cannot be forged or altered without detection, because the signature covers the content and any tampering shows as a validation failure. That asymmetry is the point: credentials that are present and green are strong evidence; missing credentials say nothing."
       }
+    },
+    {
+      "@type": "Question",
+      "name": "Why does a file from Claude or another AI assistant have Content Credentials?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "AI tools increasingly sign what they produce. Anthropic's Claude adds C2PA Content Credentials to some file types it creates or modifies, OpenAI's DALL-E images carry them, and Adobe Firefly signs its output. Drop such a file above to see exactly who signed it, when, and what it declares about how the file was made."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I add Content Credentials to my own files?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use a signing tool. <a href=\"https://zerofake.app/\">ZeroFake</a> can add C2PA Content Credentials to your files; Adobe's Creative Cloud apps sign exports when Content Credentials are enabled; and the C2PA project's open-source <a href=\"https://github.com/contentauth/c2pa-rs\">c2patool</a> signs from the command line. This site is read-only by design - it inspects credentials but never alters your file."
+      }
     }
   ]
 }
@@ -103,9 +121,9 @@
 <header class="top">
   <h1 class="brand">c2pa<span class="brand-hl">view</span></h1>
   <p class="tag">Who made this file - and has it been changed since?</p>
-  <p class="sub">Cameras, Photoshop, and AI generators like DALL·E and Firefly now sign their output with
-    <strong>C2PA Content Credentials</strong> - a cryptographic record of who made a file, with what, and every
-    edit since. Drop a file below to read that record. Everything runs in your browser:
+  <p class="sub">Cameras, Photoshop, and generative AI tools like Claude, DALL·E and Firefly now sign their
+    output with <strong>C2PA Content Credentials</strong> - a cryptographic record of who made a file, with
+    what, and every edit since. Drop a file below to read that record. Everything runs in your browser:
     <strong>the file is never uploaded anywhere</strong>.</p>
 </header>
 
@@ -163,6 +181,14 @@
     <div class="explain-card">
       <h2>Can Content Credentials be faked or removed?</h2>
       <p>They can be removed - they are metadata, and the C2PA standard itself anticipates redaction - but they cannot be forged or altered without detection, because the signature covers the content and any tampering shows as a validation failure. That asymmetry is the point: credentials that are present and green are strong evidence; missing credentials say nothing.</p>
+    </div>
+    <div class="explain-card">
+      <h2>Why does a file from Claude or another AI assistant have Content Credentials?</h2>
+      <p>AI tools increasingly sign what they produce. Anthropic's Claude adds C2PA Content Credentials to some file types it creates or modifies, OpenAI's DALL-E images carry them, and Adobe Firefly signs its output. Drop such a file above to see exactly who signed it, when, and what it declares about how the file was made.</p>
+    </div>
+    <div class="explain-card">
+      <h2>How do I add Content Credentials to my own files?</h2>
+      <p>Use a signing tool. <a href="https://zerofake.app/">ZeroFake</a> can add C2PA Content Credentials to your files; Adobe's Creative Cloud apps sign exports when Content Credentials are enabled; and the C2PA project's open-source <a href="https://github.com/contentauth/c2pa-rs">c2patool</a> signs from the command line. This site is read-only by design - it inspects credentials but never alters your file.</p>
     </div>
   </section>
 </main>
