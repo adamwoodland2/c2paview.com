@@ -23,6 +23,24 @@ const fmtDate = (iso) => {
   return Number.isNaN(d.getTime()) ? String(iso) : d.toLocaleString('en-GB', { dateStyle: 'long', timeStyle: 'short' });
 };
 
+// Where in the manifest a failure sits, from the jumbf path in the status url.
+const WHERE_HINTS = {
+  'c2pa.hash.data': 'the hash covering the actual image/audio content',
+  'c2pa.hash.boxes': 'the hash covering the file structure',
+  'c2pa.hash.bmff': 'the hash covering the video container',
+  'c2pa.thumbnail.claim.jpeg': 'the embedded claim thumbnail',
+  'c2pa.thumbnail.claim.png': 'the embedded claim thumbnail',
+  'c2pa.thumbnail.ingredient.jpeg': "an ingredient's thumbnail",
+  'c2pa.actions': 'the recorded edit history',
+  'c2pa.ingredient': 'an ingredient reference',
+};
+function whereOf(url) {
+  const m = /\/c2pa\.assertions\/([^/]+)/.exec(url || '');
+  if (!m) return null;
+  const name = m[1].replace(/__\d+$/, '');
+  return WHERE_HINTS[name] || `the "${name}" assertion`;
+}
+
 // A friendly line for the machine-readable validation codes.
 const CODE_HINTS = {
   'assertion.dataHash.mismatch': 'the pixels/bytes have been changed since signing',
@@ -133,6 +151,7 @@ function showResult(file, report) {
   const store = report.manifestStore;
   if (!store || !store.activeManifest) {
     banner.appendChild(elc('div', 'banner warn', 'No Content Credentials found in this file - it carries no provenance information either way.'));
+    postMortem(file, banner);
     return;
   }
   const status = store.validationStatus || [];
@@ -145,6 +164,11 @@ function showResult(file, report) {
       const li = elc('li');
       li.appendChild(elc('code', '', s.code));
       li.appendChild(document.createTextNode(` - ${CODE_HINTS[s.code] || s.explanation || ''}`));
+      const where = whereOf(s.url);
+      if (where) {
+        li.appendChild(document.createElement('br'));
+        li.appendChild(elc('span', 'where', `Where: ${where}.`));
+      }
       ul.appendChild(li);
     }
     b.appendChild(ul);
@@ -159,6 +183,33 @@ function showResult(file, report) {
     $('#raw').textContent = JSON.stringify(store, (k, v) => (k === 'parent' || k === 'node' ? undefined : v), 2);
     rawWrap.hidden = false;
   } catch (e) { /* circular - skip raw view */ }
+}
+
+// ------------------------------------------------------------------ stripping post-mortem
+// When a file has no credentials, look for the debris a metadata stripper leaves behind:
+// XMP provenance pointers and JUMBF fragments survive many pipelines that drop the manifest.
+async function postMortem(file, banner) {
+  let text;
+  try {
+    const cap = Math.min(file.size, 64 * 1048576);
+    text = new TextDecoder('latin1').decode(new Uint8Array(await file.slice(0, cap).arrayBuffer()));
+  } catch (e) { return; }
+  const traces = [];
+  if (text.includes('dcterms:provenance')) traces.push('The file\u2019s XMP metadata still contains a dcterms:provenance pointer to a C2PA manifest that is no longer in the file.');
+  if (/https?:\/\/[^"'<>\s]{4,200}\.c2pa/.test(text)) traces.push('The metadata references a remote .c2pa manifest URL - the credentials may live there rather than in the file (this viewer only reads embedded manifests).');
+  if (text.includes('contentauth:urn:uuid') || text.includes('c2pa_manifest')) traces.push('Fragments of a C2PA manifest identifier remain in the file.');
+  if (/jumb.{0,32}c2pa/s.test(text)) traces.push('A leftover JUMBF/C2PA fragment is present but not readable as a manifest - it was probably truncated by an editor or converter.');
+  const wrap = elc('div', 'banner ' + (traces.length ? 'warn' : 'none'));
+  if (traces.length) {
+    wrap.appendChild(document.createTextNode('But there is debris: this file very likely HAD Content Credentials that were stripped along the way.'));
+    const ul = elc('ul');
+    for (const t of traces) ul.appendChild(elc('li', '', t));
+    wrap.appendChild(ul);
+    wrap.appendChild(elc('div', '', 'Common culprits: image compressors, CMS/social-media uploads, screenshots, format conversion and "save for web" exports - most discard metadata by default.'));
+  } else {
+    wrap.appendChild(document.createTextNode('No traces of stripped credentials either. If this file once carried them, the removal was clean - re-encoding, screenshots and most upload pipelines leave nothing behind.'));
+  }
+  banner.appendChild(wrap);
 }
 
 // ------------------------------------------------------------------ reading
