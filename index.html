@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>C2PA View - inspect Content Credentials in your browser</title>
+  <meta name="description" content="Drop any image, video or audio file and see its C2PA Content Credentials: who signed it, when, with what tool, whether it is AI-generated, and whether it has been altered since. Validates entirely in your browser - the file never leaves your machine." />
+  <link rel="canonical" href="https://c2paview.com/" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://c2paview.com/" />
+  <meta property="og:title"       content="C2PA View - inspect Content Credentials in your browser" />
+  <meta property="og:description" content="Who signed this file, with what tool, and has it been changed since? Drop a file and see - validated locally, never uploaded." />
+  <meta property="og:image"       content="https://c2paview.com/og-image.png" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="C2PA View - inspect Content Credentials in your browser" />
+  <meta name="twitter:description" content="Who signed this file, and has it been changed since? Drop it in and see - validated locally, never uploaded." />
+  <meta name="twitter:image"       content="https://c2paview.com/og-image.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "C2PA View",
+    "url": "https://c2paview.com/",
+    "description": "Inspect and validate C2PA Content Credentials (provenance metadata) in any image, video or audio file, entirely in the browser.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "browserRequirements": "Requires JavaScript and WebAssembly",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "author": { "@type": "Person", "name": "Adam Woodland", "url": "https://adamwoodland.com/" }
+  }
+  </script>
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What are C2PA Content Credentials?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "An open provenance standard from the Coalition for Content Provenance and Authenticity (C2PA), backed by Adobe, Google, Microsoft, OpenAI, Leica, Nikon, the BBC and others. A camera or app cryptographically signs what it produced, the signature covers the file's actual content, and every later edit can be recorded and verified. AI generators use it to label their output; news agencies use it to prove a photo came from the camera that shot it."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I check if an image is AI-generated?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Drop it in above. If the generator added Content Credentials (DALL-E, Adobe Firefly, and others do), the actions list will say so - this page flags entries whose digital source type is trained algorithmic media as AI-generated. Absence of credentials does not prove a file is not AI-made: most AI images circulating online have had their metadata stripped by social platforms."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What does a green result prove?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "That the file carries Content Credentials, the cryptographic checks pass, and it has not been modified since it was signed. It does not by itself prove the signer is who you think - read the issuer name and judge it as you would the sender of an email. A red result means the file was changed after signing."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why does my file have no Content Credentials?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "That is the normal case. Only recent cameras and apps sign their output, and most websites and messaging apps strip metadata on upload - a signed photo posted to social media usually comes back out unsigned. No credentials means no provenance information either way: it is not evidence of tampering."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is my file uploaded anywhere?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Validation is done by the official C2PA reference implementation compiled to WebAssembly, running in your browser. This site has no backend, no accounts, no analytics and no cookies; the file's bytes never leave your machine. Load the page, go offline, and it still works."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which file types are supported?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "JPEG, PNG, WebP, AVIF, GIF, TIFF, SVG, MP4, MOV, MP3, WAV and PDF, plus detached .c2pa sidecar manifest files - the formats the C2PA specification defines embeddings for."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can Content Credentials be faked or removed?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "They can be removed - they are metadata, and the C2PA standard itself anticipates redaction - but they cannot be forged or altered without detection, because the signature covers the content and any tampering shows as a validation failure. That asymmetry is the point: credentials that are present and green are strong evidence; missing credentials say nothing."
+      }
+    }
+  ]
+}
+  </script>
+</head>
+<body>
+<header class="top">
+  <h1 class="brand">c2pa<span class="brand-hl">view</span></h1>
+  <p class="tag">Who made this file - and has it been changed since?</p>
+  <p class="sub">Cameras, Photoshop, and AI generators like DALL·E and Firefly now sign their output with
+    <strong>C2PA Content Credentials</strong> - a cryptographic record of who made a file, with what, and every
+    edit since. Drop a file below to read that record. Everything runs in your browser:
+    <strong>the file is never uploaded anywhere</strong>.</p>
+</header>
+
+<main class="layout">
+  <section class="drop" id="drop">
+    <input type="file" id="file" accept="image/*,video/*,audio/*,.pdf,.c2pa" hidden />
+    <p class="drop-big">Drop a file here</p>
+    <p class="drop-small">or <button type="button" id="browse" class="linklike">choose one</button> ·
+      JPEG, PNG, WebP, AVIF, GIF, TIFF, SVG, MP4, MOV, MP3, WAV, PDF and <code>.c2pa</code> sidecars</p>
+    <p class="drop-small"><button type="button" id="sample" class="linklike">Try a sample signed image</button> (a C2PA test-suite fixture, signed with their test certificate)</p>
+  </section>
+
+  <section class="result" id="result" hidden>
+    <div class="file-row">
+      <img id="preview" alt="" hidden />
+      <div>
+        <p class="file-name" id="fileName"></p>
+        <p class="file-meta" id="fileMeta"></p>
+      </div>
+    </div>
+    <div id="banner"></div>
+    <div id="manifest"></div>
+    <details id="rawWrap" hidden>
+      <summary>Raw manifest store (JSON)</summary>
+      <pre id="raw"></pre>
+    </details>
+  </section>
+
+  <section class="explain" id="faq">
+    <h2 class="faq-head">Questions and answers</h2>
+    <div class="explain-card">
+      <h2>What are C2PA Content Credentials?</h2>
+      <p>An open provenance standard from the Coalition for Content Provenance and Authenticity (C2PA), backed by Adobe, Google, Microsoft, OpenAI, Leica, Nikon, the BBC and others. A camera or app cryptographically signs what it produced, the signature covers the file's actual content, and every later edit can be recorded and verified. AI generators use it to label their output; news agencies use it to prove a photo came from the camera that shot it.</p>
+    </div>
+    <div class="explain-card">
+      <h2>How do I check if an image is AI-generated?</h2>
+      <p>Drop it in above. If the generator added Content Credentials (DALL-E, Adobe Firefly, and others do), the actions list will say so - this page flags entries whose digital source type is trained algorithmic media as AI-generated. Absence of credentials does not prove a file is not AI-made: most AI images circulating online have had their metadata stripped by social platforms.</p>
+    </div>
+    <div class="explain-card">
+      <h2>What does a green result prove?</h2>
+      <p>That the file carries Content Credentials, the cryptographic checks pass, and it has not been modified since it was signed. It does not by itself prove the signer is who you think - read the issuer name and judge it as you would the sender of an email. A red result means the file was changed after signing.</p>
+    </div>
+    <div class="explain-card">
+      <h2>Why does my file have no Content Credentials?</h2>
+      <p>That is the normal case. Only recent cameras and apps sign their output, and most websites and messaging apps strip metadata on upload - a signed photo posted to social media usually comes back out unsigned. No credentials means no provenance information either way: it is not evidence of tampering.</p>
+    </div>
+    <div class="explain-card">
+      <h2>Is my file uploaded anywhere?</h2>
+      <p>No. Validation is done by the official C2PA reference implementation compiled to WebAssembly, running in your browser. This site has no backend, no accounts, no analytics and no cookies; the file's bytes never leave your machine. Load the page, go offline, and it still works.</p>
+    </div>
+    <div class="explain-card">
+      <h2>Which file types are supported?</h2>
+      <p>JPEG, PNG, WebP, AVIF, GIF, TIFF, SVG, MP4, MOV, MP3, WAV and PDF, plus detached .c2pa sidecar manifest files - the formats the C2PA specification defines embeddings for.</p>
+    </div>
+    <div class="explain-card">
+      <h2>Can Content Credentials be faked or removed?</h2>
+      <p>They can be removed - they are metadata, and the C2PA standard itself anticipates redaction - but they cannot be forged or altered without detection, because the signature covers the content and any tampering shows as a validation failure. That asymmetry is the point: credentials that are present and green are strong evidence; missing credentials say nothing.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="notes">
+  <p class="note">Built on <a href="https://github.com/contentauth/c2pa-js">c2pa-js</a> (MIT/Apache-2.0) from the
+    Content Authenticity Initiative · <a href="https://c2pa.org/">C2PA specification</a> ·
+    Free, open source (<a href="LICENSE">MIT</a>) · Questions or corrections:
+    <a href="mailto:adam@c2paview.com">adam@c2paview.com</a></p>
+</footer>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>
