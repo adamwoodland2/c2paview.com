@@ -78,22 +78,61 @@ function renderManifest(manifest, heading) {
   kvRow(dl, 'Certificate serial', sig.cert_serial_number);
   card.appendChild(dl);
 
-  // Actions assertion: what was done to the asset.
+  // Actions assertion, grouped into the consumer categories the C2PA UX guidance suggests.
+  const ACTION_LABELS = {
+    'c2pa.created': 'Created', 'c2pa.opened': 'Opened', 'c2pa.saved': 'Saved',
+    'c2pa.color_adjustments': 'Colour adjustments (brightness, tone, filters)',
+    'c2pa.filtered': 'Colour adjustments (brightness, tone, filters)',
+    'c2pa.cropped': 'Cropped', 'c2pa.resized': 'Resized', 'c2pa.orientation': 'Rotated or flipped',
+    'c2pa.edited': 'Edited', 'c2pa.drawing': 'Drawing or painting',
+    'c2pa.placed': 'Compositing (merging, layering)', 'c2pa.removed': 'Content removed',
+    'c2pa.transcoded': 'Format conversion', 'c2pa.converted': 'Format conversion',
+    'c2pa.published': 'Published', 'c2pa.repackaged': 'Repackaged', 'c2pa.redacted': 'Information redacted',
+  };
   const actions = manifest.assertions && (manifest.assertions.get('c2pa.actions') || []);
-  const actList = [];
+  const seen = new Map();
   for (const a of actions) {
     for (const act of (a.data && a.data.actions) || []) {
-      let label = (act.action || '').replace(/^c2pa\./, '').replace(/([A-Z])/g, ' $1');
-      if (act.parameters && act.parameters.name) label += ` (${act.parameters.name})`;
+      let label = ACTION_LABELS[act.action] || (act.action || '').replace(/^c2pa\./, '').replace(/[_.]/g, ' ');
       if (act.softwareAgent) label += ` - ${typeof act.softwareAgent === 'string' ? act.softwareAgent : act.softwareAgent.name}`;
-      if (act.digitalSourceType && /trainedAlgorithmicMedia/.test(act.digitalSourceType)) label += ' · AI-generated';
-      actList.push(label);
+      if (act.digitalSourceType && /trainedAlgorithmicMedia/.test(act.digitalSourceType)) label += ' · fully AI-generated';
+      else if (act.digitalSourceType && /compositeWithTrainedAlgorithmicMedia/.test(act.digitalSourceType)) label += ' · partly AI-generated';
+      seen.set(label, (seen.get(label) || 0) + 1);
     }
   }
+  const actList = [...seen.entries()].map(([label, n]) => n > 1 ? `${label} (×${n})` : label);
   if (actList.length) {
     card.appendChild(elc('h2', '', 'What was done'));
     const ul = elc('ul', 'actions');
     for (const a of actList) ul.appendChild(elc('li', '', a));
+    card.appendChild(ul);
+  }
+
+  // Other assertions, tagged by origin: system-recorded vs entered by the creator
+  // ("created" vs "gathered" in C2PA terms).
+  const GATHERED = {
+    'stds.schema-org.CreativeWork': 'Creator and attribution details',
+    'stds.schema-org.CreativeWork__1': 'Creator and attribution details',
+    'c2pa.training-mining': 'AI training and data-mining preferences',
+    'cawg.training-mining': 'AI training and data-mining preferences',
+  };
+  const SYSTEM = {
+    'stds.exif': 'Camera details (EXIF)',
+    'c2pa.depthmap.GDepth': 'Depth map',
+  };
+  const SKIP = /^c2pa\.(actions|hash\.|thumbnail|ingredient|claim)/;
+  const others = [];
+  for (const a of (manifest.assertions && manifest.assertions.data) || []) {
+    if (!a.label || SKIP.test(a.label)) continue;
+    if (GATHERED[a.label]) others.push(`${GATHERED[a.label]} - entered by the creator`);
+    else if (SYSTEM[a.label]) others.push(`${SYSTEM[a.label]} - recorded by the capture device`);
+    else if (a.label === 'stds.exif') others.push('Camera details (EXIF) - recorded by the capture device');
+    else others.push(`${a.label} - recorded by the signing app`);
+  }
+  if (others.length) {
+    card.appendChild(elc('h2', '', 'Also recorded'));
+    const ul = elc('ul', 'actions');
+    for (const o of [...new Set(others)]) ul.appendChild(elc('li', '', o));
     card.appendChild(ul);
   }
 
@@ -172,6 +211,19 @@ function showResult(file, report) {
       ul.appendChild(li);
     }
     b.appendChild(ul);
+    const total = Object.keys(store.manifests || {}).length;
+    if (total > 1) {
+      const affected = new Set();
+      for (const s of status) {
+        const m = /\/c2pa\/([^/]+)\//.exec(s.url || '');
+        if (m) affected.add(m[1]);
+      }
+      const okCount = total - affected.size;
+      if (affected.size && okCount > 0) {
+        b.appendChild(elc('div', 'affected',
+          `Affected: ${affected.size} of ${total} manifests (${[...affected].join(', ')}). The other ${okCount} report${okCount === 1 ? 's' : ''} no issues.`));
+      }
+    }
     banner.appendChild(b);
   }
 

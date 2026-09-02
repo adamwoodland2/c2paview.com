@@ -4,7 +4,7 @@
 //  - Bump CACHE on deploys that change any precached file.
 //  - Also receives Android share-sheet files (share_target POST /share): the shared file is
 //    parked in a one-shot cache and the client picks it up after redirect.
-const CACHE = 'cv-v4';
+const CACHE = 'cv-v5';
 const CORE = [
 	'/',
 	'/index.html',

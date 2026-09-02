@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>C2PA View - inspect Content Credentials in your browser</title>
-  <meta name="description" content="Drop any image, video or audio file and see its C2PA Content Credentials: who signed it, when, with what tool, and whether it has been altered since. Reads the provenance added by cameras, Photoshop, and generative AI like Claude, DALL·E and Firefly. Validates entirely in your browser - the file never leaves your machine." />
+  <meta name="description" content="Drop any image, video or audio file and see its Content Credentials: who signed it, when, with what tool, and whether it has been altered since. Reads the provenance added by cameras, Photoshop, and generative AI like Claude, DALL·E and Firefly. Validates entirely in your browser - the file never leaves your machine." />
   <link rel="canonical" href="https://c2paview.com/" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
@@ -42,7 +42,7 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "What are C2PA Content Credentials?",
+      "name": "What are Content Credentials?",
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "An open provenance standard from the Coalition for Content Provenance and Authenticity (C2PA), backed by Adobe, Google, Microsoft, OpenAI, Leica, Nikon, the BBC and others. A camera or app cryptographically signs what it produced, the signature covers the file's actual content, and every later edit can be recorded and verified. AI generators use it to label their output; news agencies use it to prove a photo came from the camera that shot it."
@@ -101,7 +101,7 @@
       "name": "Why does a file from Claude or another AI assistant have Content Credentials?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "AI tools increasingly sign what they produce. Anthropic's Claude adds C2PA Content Credentials to some file types it creates or modifies, OpenAI's DALL-E images carry them, and Adobe Firefly signs its output. Drop such a file above to see exactly who signed it, when, and what it declares about how the file was made."
+        "text": "AI tools increasingly sign what they produce. Anthropic's Claude adds Content Credentials to some file types it creates or modifies, OpenAI's DALL-E images carry them, and Adobe Firefly signs its output. Drop such a file above to see exactly who signed it, when, and what it declares about how the file was made."
       }
     },
     {
@@ -121,7 +121,7 @@
   <h1 class="brand">c2pa<span class="brand-hl">view</span></h1>
   <p class="tag">Who made this file - and has it been changed since?</p>
   <p class="sub">Cameras, Photoshop, and generative AI tools like Claude, DALL·E and Firefly now sign their
-    output with <strong>C2PA Content Credentials</strong> - a cryptographic record of who made a file, with
+    output with <strong>Content Credentials</strong> (the C2PA open standard) - a cryptographic record of who made a file, with
     what, and every edit since. Drop a file below to read that record. Everything runs in your browser:
     <strong>the file is never uploaded anywhere</strong>.</p>
 </header>
@@ -154,7 +154,7 @@
   <section class="explain" id="faq">
     <h2 class="faq-head">Questions and answers</h2>
     <div class="explain-card">
-      <h2>What are C2PA Content Credentials?</h2>
+      <h2>What are Content Credentials?</h2>
       <p>An open provenance standard from the Coalition for Content Provenance and Authenticity (C2PA), backed by Adobe, Google, Microsoft, OpenAI, Leica, Nikon, the BBC and others. A camera or app cryptographically signs what it produced, the signature covers the file's actual content, and every later edit can be recorded and verified. AI generators use it to label their output; news agencies use it to prove a photo came from the camera that shot it.</p>
     </div>
     <div class="explain-card">
@@ -183,7 +183,7 @@
     </div>
     <div class="explain-card">
       <h2>Why does a file from Claude or another AI assistant have Content Credentials?</h2>
-      <p>AI tools increasingly sign what they produce. Anthropic's Claude adds C2PA Content Credentials to some file types it creates or modifies, OpenAI's DALL-E images carry them, and Adobe Firefly signs its output. Drop such a file above to see exactly who signed it, when, and what it declares about how the file was made.</p>
+      <p>AI tools increasingly sign what they produce. Anthropic's Claude adds Content Credentials to some file types it creates or modifies, OpenAI's DALL-E images carry them, and Adobe Firefly signs its output. Drop such a file above to see exactly who signed it, when, and what it declares about how the file was made.</p>
     </div>
     <div class="explain-card">
       <h2>How do I add Content Credentials to my own files?</h2>
