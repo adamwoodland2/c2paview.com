@@ -9,6 +9,24 @@ const c2paReady = createC2pa({
   workerSrc: './lib/c2pa.worker.min.js',
 });
 
+// Trust lists (self-hosted snapshots): the official C2PA Conformance Program anchors, its
+// TSA anchors, and the interim CAI list most production assets still chain to. With these,
+// a valid-but-unknown signer surfaces as signingCredential.untrusted instead of passing green.
+let trustEnabled = false;
+const trustReady = (async () => {
+  try {
+    const [a1, a2, a3, allowed, cfg] = await Promise.all([
+      'trust/c2pa-trust-list.pem', 'trust/c2pa-tsa-trust-list.pem', 'trust/interim-anchors.pem',
+      'trust/interim-allowed.sha256.txt', 'trust/store.cfg',
+    ].map((u) => fetch(u).then((r) => { if (!r.ok) throw new Error(u); return r.text(); })));
+    trustEnabled = true;
+    return {
+      trust: { trustAnchors: `${a1}\n${a2}\n${a3}`, allowedList: allowed, trustConfig: cfg },
+      verify: { verifyTrust: true },
+    };
+  } catch (e) { return null; }   // offline before first cache: integrity-only
+})();
+
 // ------------------------------------------------------------------ helpers
 function elc(tag, cls, text) {
   const n = document.createElement(tag);
@@ -149,8 +167,11 @@ function renderManifest(manifest, heading) {
         li.appendChild(im);
       }
       li.appendChild(document.createTextNode(ing.title || '(untitled)'));
-      const bad = (ing.validationStatus || []).length;
-      const st = elc('span', 'ing-status' + (bad ? ' bad' : ''), bad ? ' · has validation issues' : (ing.manifest ? ' · carries its own credentials' : ''));
+      const stats = ing.validationStatus || [];
+      const bad = stats.filter((s) => s.code !== 'signingCredential.untrusted').length;
+      const untrusted = stats.length > 0 && !bad;
+      const st = elc('span', 'ing-status' + (bad ? ' bad' : ''),
+        bad ? ' · has validation issues' : untrusted ? ' · signer not on the trust lists' : (ing.manifest ? ' · carries its own credentials' : ''));
       li.appendChild(st);
       ul.appendChild(li);
       if (ing.manifest) {
@@ -194,8 +215,14 @@ function showResult(file, report) {
     return;
   }
   const status = store.validationStatus || [];
+  const untrustedOnly = status.length > 0 && status.every((s) => s.code === 'signingCredential.untrusted');
   if (status.length === 0) {
-    banner.appendChild(elc('div', 'banner good', '✓ Content Credentials are present and valid - the file has not been changed since it was signed.'));
+    banner.appendChild(elc('div', 'banner good', trustEnabled
+      ? '✓ Content Credentials are present and valid - the file has not been changed since it was signed, and the signer is on the C2PA trust lists.'
+      : '✓ Content Credentials are present and valid - the file has not been changed since it was signed. (Trust lists unavailable offline: signer identity not checked.)'));
+  } else if (untrustedOnly) {
+    const b = elc('div', 'banner warn', '✓ The file has not been changed since it was signed - but the signer is not on the C2PA trust lists, so the identity of the signer can\u2019t be verified. Judge the issuer name below as you would an unknown email sender.');
+    banner.appendChild(b);
   } else {
     const b = elc('div', 'banner bad', '✗ Content Credentials are present but validation FAILED:');
     const ul = elc('ul');
@@ -271,7 +298,8 @@ async function inspect(file) {
   $('#manifest').replaceChildren();
   try {
     const c2pa = await c2paReady;
-    const { manifestStore } = await c2pa.read(file);
+    const settings = await trustReady;
+    const { manifestStore } = await c2pa.read(file, settings ? { settings } : undefined);
     showResult(file, { manifestStore });
   } catch (e) {
     showResult(file, { error: e && e.message ? e.message : String(e) });

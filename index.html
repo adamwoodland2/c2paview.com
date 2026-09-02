@@ -61,7 +61,7 @@
       "name": "What does a green result prove?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "That the file carries Content Credentials, the cryptographic checks pass, and it has not been modified since it was signed. It does not by itself prove the signer is who you think - read the issuer name and judge it as you would the sender of an email. A red result means the file was changed after signing."
+        "text": "That the file carries Content Credentials, the cryptographic checks pass, the file has not been modified since signing, and the signer's certificate chains to the published C2PA trust lists. If the file is intact but the signer is not on those lists, an amber result says so - the identity of the signer can't be verified. A red result means the file was changed after signing."
       }
     },
     {
@@ -163,7 +163,7 @@
     </div>
     <div class="explain-card">
       <h2>What does a green result prove?</h2>
-      <p>That the file carries Content Credentials, the cryptographic checks pass, and it has not been modified since it was signed. It does not by itself prove the signer is who you think - read the issuer name and judge it as you would the sender of an email. A red result means the file was changed after signing.</p>
+      <p>That the file carries Content Credentials, the cryptographic checks pass, the file has not been modified since signing, and the signer's certificate chains to the published C2PA trust lists. If the file is intact but the signer is not on those lists, an amber result says so - the identity of the signer can't be verified. A red result means the file was changed after signing.</p>
     </div>
     <div class="explain-card">
       <h2>Why does my file have no Content Credentials?</h2>

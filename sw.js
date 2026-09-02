@@ -4,7 +4,7 @@
 //  - Bump CACHE on deploys that change any precached file.
 //  - Also receives Android share-sheet files (share_target POST /share): the shared file is
 //    parked in a one-shot cache and the client picks it up after redirect.
-const CACHE = 'cv-v5';
+const CACHE = 'cv-v6';
 const CORE = [
 	'/',
 	'/index.html',
@@ -15,7 +15,12 @@ const CORE = [
 	'/lib/toolkit_bg.wasm',
 	'/favicon.svg',
 	'/manifest.json',
-	'/samples/signed.jpg'
+	'/samples/signed.jpg',
+	'/trust/c2pa-trust-list.pem',
+	'/trust/c2pa-tsa-trust-list.pem',
+	'/trust/interim-anchors.pem',
+	'/trust/interim-allowed.sha256.txt',
+	'/trust/store.cfg'
 ];
 
 self.addEventListener('install', (e) => {
