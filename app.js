@@ -316,10 +316,16 @@ drop.addEventListener('drop', (e) => {
   const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
   if (f) inspect(f);
 });
-$('#sample').addEventListener('click', async () => {
-  const blob = await (await fetch('samples/signed.jpg')).blob();
-  inspect(new File([blob], 'sample-signed.jpg', { type: 'image/jpeg' }));
-});
+const SAMPLES = {
+  sample: ['samples/signed.jpg', 'sample-signed.jpg', 'image/jpeg'],
+  sampleZeroFake: ['samples/enoggera-creek.png', 'enoggera-creek.png', 'image/png'],
+};
+for (const [id, [url, name, type]] of Object.entries(SAMPLES)) {
+  $('#' + id).addEventListener('click', async () => {
+    const blob = await (await fetch(url)).blob();
+    inspect(new File([blob], name, { type }));
+  });
+}
 
 // ------------------------------------------------------------------ PWA
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
